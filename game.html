@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click the Dot Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            border: 1px solid black;
+        }
+        #dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        #result {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .tower {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 5px;
+        }
+        .green {
+            background-color: green;
+        }
+        .yellow {
+            background-color: yellow;
+        }
+        .red {
+            background-color: red;
+        }
+        #face {
+            font-size: 72px;
+        }
+        #click-time {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #statistics {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="dot"></div>
+    </div>
+    <p id="result"></p>
+    <div id="towers"></div>
+    <div id="face"></div>
+    <p id="click-time">You clicked after <span id="time-taken">0.00</span> seconds.</p>
+    <div id="statistics">Statistics: Good: <span id="good-count">0</span>, Nice: <span id="nice-count">0</span>, Try again: <span id="try-again-count">0</span>, Average time: <span id="average-time">0.00</span> seconds</div>
+
+    <script>
+        const dot = document.getElementById('dot');
+        const result = document.getElementById('result');
+        const towersContainer = document.getElementById('towers');
+        const face = document.getElementById('face');
+        const timeTakenSpan = document.getElementById('time-taken');
+        const goodCountSpan = document.getElementById('good-count');
+        const niceCountSpan = document.getElementById('nice-count');
+        const tryAgainCountSpan = document.getElementById('try-again-count');
+        const averageTimeSpan = document.getElementById('average-time');
+        let startTime, endTime;
+        let totalClicks = 0;
+        let totalTime = 0;
+        let towerHeight = 0;
+        let goodCount = 0;
+        let niceCount = 0;
+        let tryAgainCount = 0;
+
+        function getRandomPosition() {
+            const x = Math.random() * (400 - 20);
+            const y = Math.random() * (400 - 20);
+            return { x, y };
+        }
+
+        function moveDot() {
+            const position = getRandomPosition();
+            dot.style.left = position.x + 'px';
+            dot.style.top = position.y + 'px';
+        }
+
+        function createTower(color) {
+            const tower = document.createElement('div');
+            tower.classList.add('tower');
+            tower.classList.add(color);
+            tower.style.bottom = towerHeight + 'px';
+            towersContainer.appendChild(tower);
+            towerHeight += 25; // Increase tower height
+            
+            // Limit the number of tower blocks to 6
+            if (towersContainer.childElementCount > 6) {
+                towersContainer.removeChild(towersContainer.firstElementChild);
+                towerHeight -= 25; // Decrease tower height
+            }
+        }
+
+        function updateStatistics(timeTaken) {
+            totalClicks++;
+            totalTime += timeTaken;
+            const averageTime = totalClicks > 0 ? totalTime / totalClicks : 0;
+            averageTimeSpan.textContent = averageTime.toFixed(2);
+
+            if (timeTaken < 1) {
+                goodCount++;
+                goodCountSpan.textContent = goodCount;
+            } else if (timeTaken >= 1 && timeTaken <= 5) {
+                niceCount++;
+                niceCountSpan.textContent = niceCount;
+            } else {
+                tryAgainCount++;
+                tryAgainCountSpan.textContent = tryAgainCount;
+            }
+        }
+
+        function startGame() {
+            moveDot();
+            startTime = Date.now();
+        }
+
+        function endGame() {
+            endTime = Date.now();
+            const timeTaken = (endTime - startTime) / 1000;
+            result.textContent = `You clicked the dot in ${timeTaken.toFixed(2)} seconds.`;
+            timeTakenSpan.textContent = timeTaken.toFixed(2);
+
+            if (timeTaken < 1) {
+                createTower('green');
+                face.textContent = ":D";
+            } else if (timeTaken >= 1 && timeTaken <= 5) {
+                createTower('yellow');
+                face.textContent = ":|";
+            } else {
+                createTower('red');
+                face.textContent = ":(";
+            }
+
+            updateStatistics(timeTaken);
+
+            setTimeout(() => {
+                result.textContent = ''; // Clear the result message
+                startGame(); // Start the game again
+            }, 2000); // Refresh after 2 seconds
+        }
+
+        dot.addEventListener('click', endGame);
+        startGame();
+    </script>
+</body>
+</html>
